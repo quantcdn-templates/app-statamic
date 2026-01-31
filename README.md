@@ -2,7 +2,7 @@
 
 A production-ready Statamic CMS template for Quant Cloud, featuring PHP 8.4, Apache with mod_php, and flat-file content storage.
 
-[![Deploy to Quant Cloud](https://www.quantcdn.io/img/quant-deploy-btn-sml.svg)](https://dashboard.quantcdn.io/cloud-apps/create/starter-kit/app-statamic)
+[![Deploy to Quant Cloud](https://www.quantcdn.io/img/quant-deploy-btn-sml.svg)](https://dashboard.quantcdn.io/deploy/app/app-statamic)
 
 ## Features
 
