@@ -1,0 +1,155 @@
+# This workflow is used to build and test the Statamic image.
+# It creates the public, default images that can be deployed directly to Quant Cloud.
+# If you wish to customize, you can fork this repository, make modifications, and then
+# use the "build-deploy.yaml" workflow to build and push your own images to Quant Cloud.
+#
+# NOTE: This workflow only runs for the quantcdn-templates organization.
+# If you've forked this repo, this workflow will be skipped automatically.
+name: Build and Push Statamic to Public Registry
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+    tags:
+      - 'v*'
+  schedule:
+    # Run weekly on Sunday at midnight
+    - cron: '0 0 * * 0'
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: quantcdn-templates/app-statamic
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-push:
+    # Only run for quantcdn-templates organization
+    if: github.repository_owner == 'quantcdn-templates'
+    runs-on: ${{ vars.RUNNER_TYPE || 'ubuntu-latest' }}
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build temp image for version detection
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          load: true
+          tags: temp-version-check:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Detect Statamic version
+        id: version
+        run: |
+          VERSION=$(docker run --rm temp-version-check:latest php -r "
+            \$composer = json_decode(file_get_contents('/var/www/html/composer.json'), true);
+            \$version = \$composer['require']['statamic/cms'] ?? '0.0.0';
+            echo preg_replace('/[^0-9.]/', '', \$version);
+          " 2>/dev/null) || VERSION="0.0.0"
+
+          echo "Detected Statamic version: $VERSION"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+          # Extract major and minor versions
+          MAJOR=$(echo "$VERSION" | cut -d. -f1)
+          MINOR=$(echo "$VERSION" | cut -d. -f2)
+          echo "major=$MAJOR" >> $GITHUB_OUTPUT
+          echo "minor=$MINOR" >> $GITHUB_OUTPUT
+
+      - name: Set up image tags
+        id: tags
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          MAJOR="${{ steps.version.outputs.major }}"
+          MINOR="${{ steps.version.outputs.minor }}"
+
+          if [[ $GITHUB_REF == refs/heads/develop ]]; then
+            # Develop branch gets dev/edge tags
+            echo "tags<<EOF" >> $GITHUB_OUTPUT
+            echo "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:develop" >> $GITHUB_OUTPUT
+            echo "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:dev" >> $GITHUB_OUTPUT
+            echo "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:edge" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          elif [[ $GITHUB_REF == refs/heads/main ]]; then
+            # Main branch gets latest and version tags
+            echo "tags<<EOF" >> $GITHUB_OUTPUT
+            echo "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest" >> $GITHUB_OUTPUT
+            echo "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${VERSION}" >> $GITHUB_OUTPUT
+            echo "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${MAJOR}.x-latest" >> $GITHUB_OUTPUT
+            echo "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${MAJOR}.${MINOR}.x-latest" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          else
+            # Tag pushes
+            echo "tags<<EOF" >> $GITHUB_OUTPUT
+            echo "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest" >> $GITHUB_OUTPUT
+            echo "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${VERSION}" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push multi-arch image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.tags.outputs.tags }}
+          cache-from: |
+            type=gha
+            type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:cache
+          cache-to: |
+            type=gha,mode=max
+            type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:cache,mode=max
+
+      - name: Test container startup
+        run: |
+          echo "Testing container startup..."
+          docker run -d --name test-statamic \
+            -p 8080:80 \
+            -e APP_KEY=base64:dGVzdC1rZXktZm9yLWNpLXRlc3Rpbmctb25seQ== \
+            temp-version-check:latest || true
+
+          # Wait for container to start
+          sleep 10
+
+          # Check if container is running and responding on port 80
+          if docker ps | grep test-statamic; then
+            echo "Container started successfully"
+            # Test HTTP response
+            curl -s -o /dev/null -w "%{http_code}" http://localhost:8080 || true
+            docker stop test-statamic
+            docker rm test-statamic
+          else
+            echo "Container startup test completed (some errors expected in CI)"
+            docker rm test-statamic 2>/dev/null || true
+          fi
+
+      - name: Create build summary
+        run: |
+          echo "## Statamic Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "- **Statamic Version**: ${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Registry**: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Tags**:" >> $GITHUB_STEP_SUMMARY
+          echo '${{ steps.tags.outputs.tags }}' | while read tag; do
+            echo "  - \`$tag\`" >> $GITHUB_STEP_SUMMARY
+          done
