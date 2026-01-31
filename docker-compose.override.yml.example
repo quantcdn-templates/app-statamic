@@ -1,0 +1,34 @@
+# Copy this file to docker-compose.override.yml for local development
+# docker-compose.override.yml is ignored by git for local customization
+
+services:
+  statamic:
+    environment:
+      # Laravel/Statamic Configuration
+      - APP_ENV=local
+      - APP_DEBUG=true
+      - APP_KEY=base64:your-generated-key-here
+      - APP_URL=http://localhost
+      - LOG_CHANNEL=stderr
+      - LOG_LEVEL=debug
+
+      # Statamic Configuration
+      - STATAMIC_LICENSE_KEY=
+      - STATAMIC_STACHE_WATCHER=true
+
+      # Cache Configuration
+      - CACHE_DRIVER=file
+      - SESSION_DRIVER=file
+      - QUEUE_CONNECTION=sync
+
+      # Mail Configuration (for local testing)
+      - MAIL_MAILER=log
+      - MAIL_FROM_ADDRESS=hello@example.com
+      - MAIL_FROM_NAME="Statamic App"
+
+      # SMTP Configuration (uncomment to test SMTP)
+      # - QUANT_SMTP_RELAY_ENABLED=false
+      # - QUANT_SMTP_HOST=mailhog
+      # - QUANT_SMTP_PORT=1025
+      # - QUANT_SMTP_FROM=test@example.com
+      # - QUANT_SMTP_FROM_NAME="Statamic Test"

@@ -1,0 +1,11 @@
+[{
+    "title": "Statamic",
+    "url": "/deploy/step-one?template=app-statamic",
+    "summary": "A flat-file CMS built on Laravel with beautiful content management.",
+    "content": "Deploy Statamic, the radically different flat-file CMS built on Laravel. Features a beautiful control panel, flexible content modeling, and Git-based version control. Works without a database by default.",
+    "image": "https://raw.githubusercontent.com/quantcdn-templates/app-statamic/main/quant/screenshot.png",
+    "categories": ["cms", "php", "laravel"],
+    "tags": ["statamic", "cms", "flat-file", "laravel", "php"],
+    "template_type": "app",
+    "requires_db": false
+}]

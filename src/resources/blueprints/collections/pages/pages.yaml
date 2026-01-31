@@ -1,0 +1,23 @@
+title: Pages
+tabs:
+  main:
+    display: Main
+    sections:
+      -
+        fields:
+          -
+            handle: content
+            field:
+              type: markdown
+              display: Content
+              buttons:
+                - h2
+                - h3
+                - bold
+                - italic
+                - unorderedlist
+                - orderedlist
+                - quote
+                - link
+                - image
+                - code
