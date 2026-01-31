@@ -3,8 +3,6 @@
 
 services:
   statamic:
-    ports:
-      - "8080:80"  # Use 8080 to avoid conflicts with local web servers
     environment:
       # Laravel/Statamic Configuration
       - APP_ENV=local

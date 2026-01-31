@@ -3,8 +3,8 @@ services:
     image: ghcr.io/quantcdn-templates/app-statamic:latest
     build: .
     restart: unless-stopped
-    # Ports defined in docker-compose.override.yml for local dev
-    # Quant Cloud handles routing in production
+    ports:
+      - "80:80"
     volumes:
       # Persistent storage for Statamic content, users, and storage directories
       - statamic_content:/var/www/html/content
