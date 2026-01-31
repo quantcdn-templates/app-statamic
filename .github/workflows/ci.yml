@@ -55,19 +55,17 @@ jobs:
       - name: Detect Statamic version
         id: version
         run: |
+          # Get actual installed Statamic version from composer.lock
           VERSION=$(docker run --rm temp-version-check:latest php -r "
-            \$composer = json_decode(file_get_contents('/var/www/html/composer.json'), true);
-            \$version = \$composer['require']['statamic/cms'] ?? '0.0.0';
-            echo preg_replace('/[^0-9.]/', '', \$version);
+            \$lock = json_decode(file_get_contents('/var/www/html/composer.lock'), true);
+            foreach (\$lock['packages'] ?? [] as \$pkg) {
+              if (\$pkg['name'] === 'statamic/cms') {
+                echo preg_replace('/[^0-9.]/', '', \$pkg['version']);
+                exit;
+              }
+            }
+            echo '0.0.0';
           " 2>/dev/null) || VERSION="0.0.0"
-
-          # Normalize version to x.y.z format
-          PARTS=$(echo "$VERSION" | tr '.' '\n' | wc -l)
-          if [ "$PARTS" -eq 1 ]; then
-            VERSION="${VERSION}.0.0"
-          elif [ "$PARTS" -eq 2 ]; then
-            VERSION="${VERSION}.0"
-          fi
 
           echo "Detected Statamic version: $VERSION"
           echo "version=$VERSION" >> $GITHUB_OUTPUT
