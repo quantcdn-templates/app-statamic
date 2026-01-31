@@ -1,3 +1,6 @@
+# Lock files (generated during build)
+src/composer.lock
+
 # Local development override
 docker-compose.override.yml
 
