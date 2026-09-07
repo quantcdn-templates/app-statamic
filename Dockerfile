@@ -1,3 +1,15 @@
+# Front-end assets. The layout loads them through the Vite manifest, which
+# only exists after `vite build`; the PHP image has no Node, so build here.
+FROM node:22-alpine AS assets
+WORKDIR /app
+COPY src/package.json ./
+RUN npm install --no-audit --no-fund
+COPY src/vite.config.js ./
+COPY src/resources ./resources
+# Tailwind scans content/ for class names (see resources/css/site.css).
+COPY src/content ./content
+RUN npm run build
+
 FROM ghcr.io/quantcdn-templates/app-apache-php:8.4
 
 # Remap www-data to UID/GID 1000 to match EFS access points (if not already done in base image)
@@ -100,6 +112,7 @@ RUN usermod -a -G www-data nobody 2>/dev/null || true && \
 
 # Copy source code (changes frequently - do this last!)
 COPY src/ /var/www/html/
+COPY --from=assets /app/public/build /var/www/html/public/build
 
 # Keep a pristine copy of the flat-file content and users. On Quant Cloud both
 # directories are persistent volumes that start empty and hide these files, so
