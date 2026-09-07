@@ -101,6 +101,13 @@ RUN usermod -a -G www-data nobody 2>/dev/null || true && \
 # Copy source code (changes frequently - do this last!)
 COPY src/ /var/www/html/
 
+# Keep a pristine copy of the flat-file content and users. On Quant Cloud both
+# directories are persistent volumes that start empty and hide these files, so
+# the entrypoint seeds them from here on first boot.
+RUN mkdir -p /usr/src/statamic-seed && \
+    cp -a /var/www/html/content /usr/src/statamic-seed/content && \
+    cp -a /var/www/html/users /usr/src/statamic-seed/users
+
 # Final setup that depends on source code
 RUN set -eux; \
     # Copy .env.example to .env if .env doesn't exist
