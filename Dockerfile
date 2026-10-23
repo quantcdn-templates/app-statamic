@@ -12,7 +12,7 @@ RUN npm run build
 
 FROM ghcr.io/quantcdn-templates/app-apache-php:8.4
 
-# Remap www-data to UID/GID 1000 to match EFS access points (if not already done in base image)
+# Remap www-data to UID/GID 1000 to match shared filesystem access points (if not already done in base image)
 RUN groupmod -g 1000 www-data 2>/dev/null || true && \
     usermod -u 1000 -g 1000 www-data 2>/dev/null || true && \
     # Fix ownership of existing www-data files after UID/GID change
