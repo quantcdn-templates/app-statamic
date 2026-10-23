@@ -56,7 +56,8 @@ jobs:
         id: version
         run: |
           # Get actual installed Statamic version from composer.lock
-          VERSION=$(docker run --rm temp-version-check:latest php -r "
+          # Bypass the entrypoint: it prints setup messages to stdout.
+          VERSION=$(docker run --rm --entrypoint php temp-version-check:latest -r "
             \$lock = json_decode(file_get_contents('/var/www/html/composer.lock'), true);
             foreach (\$lock['packages'] ?? [] as \$pkg) {
               if (\$pkg['name'] === 'statamic/cms') {
@@ -67,6 +68,10 @@ jobs:
             echo '0.0.0';
           " 2>/dev/null) || VERSION="0.0.0"
 
+          if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::Unexpected Statamic version output: $VERSION"
+            exit 1
+          fi
           echo "Detected Statamic version: $VERSION"
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
