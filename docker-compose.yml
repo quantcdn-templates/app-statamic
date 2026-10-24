@@ -17,13 +17,12 @@ services:
       # Laravel/Statamic Configuration
       - APP_ENV=${APP_ENV:-production}
       - APP_DEBUG=${APP_DEBUG:-false}
-      - APP_KEY=${APP_KEY:-base64:UNfV7P+GtL4rzkK8sLGEMo43QRE+u/NyUaIoEULz6BY=}
       - APP_URL=${APP_URL:-http://localhost}
       - LOG_CHANNEL=${LOG_CHANNEL:-stderr}
       - LOG_LEVEL=${LOG_LEVEL:-error}
 
       # Statamic Configuration
-      - STATAMIC_LICENSE_KEY=${STATAMIC_LICENSE_KEY:-}
+      - STATAMIC_LICENSE_KEY=${STATAMIC_LICENSE_KEY}
       - STATAMIC_STACHE_WATCHER=${STATAMIC_STACHE_WATCHER:-false}
 
       # Cache Configuration (flat-file by default)

@@ -7,5 +7,13 @@
     "categories": ["cms", "php", "laravel"],
     "tags": ["statamic", "cms", "flat-file", "laravel", "php"],
     "template_type": "app",
-    "requires_db": false
+    "requires_db": false,
+    "secrets": [
+        {
+            "name": "APP_KEY",
+            "description": "Laravel application encryption key",
+            "generate": "random",
+            "length": 32
+        }
+    ]
 }]
