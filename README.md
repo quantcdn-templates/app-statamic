@@ -41,25 +41,20 @@ A production-ready Statamic CMS template for Quant Cloud, featuring PHP 8.4, Apa
    ```
 
    Edit `docker-compose.override.yml` to set your local environment variables, especially:
-   - `APP_KEY` - Generate with `docker-compose exec statamic php artisan key:generate`
+   - `APP_KEY` - Required. The container does not start without it. Generate a value with `php artisan key:generate --show` (or `openssl rand -base64 32`, prefixed with `base64:`).
 
 3. Start the application:
    ```bash
    docker-compose up -d
    ```
 
-4. Generate application key:
-   ```bash
-   docker-compose exec statamic php artisan key:generate
-   ```
-
-5. Create your first user:
+4. Create your first user:
    ```bash
    docker-compose exec statamic php please make:user
    ```
 
-6. Access your application at `http://localhost`
-7. Access the control panel at `http://localhost/cp`
+5. Access your application at `http://localhost`
+6. Access the control panel at `http://localhost/cp`
 
 ## Configuration
 
@@ -68,7 +63,8 @@ A production-ready Statamic CMS template for Quant Cloud, featuring PHP 8.4, Apa
 Key environment variables you should configure:
 
 #### Statamic/Laravel Configuration
-- `APP_KEY` - Application encryption key (required)
+- `APP_KEY` - Application encryption key (required). On Quant Cloud the key is generated for you. Locally, set it in `docker-compose.override.yml`.
+  Warning: do not change `APP_KEY` on a live site. A new key logs out all users and makes values encrypted with the old key unreadable.
 - `APP_ENV` - Application environment (default: production)
 - `APP_DEBUG` - Enable debug mode (default: false)
 - `APP_URL` - Application URL

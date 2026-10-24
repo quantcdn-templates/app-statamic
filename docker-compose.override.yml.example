@@ -7,6 +7,7 @@ services:
       # Laravel/Statamic Configuration
       - APP_ENV=local
       - APP_DEBUG=true
+      # Generate with: php artisan key:generate --show
       - APP_KEY=base64:your-generated-key-here
       - APP_URL=http://localhost
       - LOG_CHANNEL=stderr
