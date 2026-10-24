@@ -64,6 +64,7 @@ Key environment variables you should configure:
 
 #### Statamic/Laravel Configuration
 - `APP_KEY` - Application encryption key (required). On Quant Cloud the key is generated for you. Locally, set it in `docker-compose.override.yml`.
+  Warning: do not change `APP_KEY` on a live site. A new key logs out all users and makes values encrypted with the old key unreadable.
 - `APP_ENV` - Application environment (default: production)
 - `APP_DEBUG` - Enable debug mode (default: false)
 - `APP_URL` - Application URL

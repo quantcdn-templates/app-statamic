@@ -3,7 +3,8 @@
 # secret-like environment variable. Services with a quant.type label are
 # platform-managed and out of scope.
 # Usage: lint-compose-secrets.sh <compose-file>...
-# Prints "file:line: VAR has a literal value" per violation; exit 1 if any.
+# Prints "file:line: VAR has a literal value" per violation to stdout.
+# Exit 0 when clean, 1 when any violation is found, 2 on a usage error.
 
 NAME_RE='(key|secret|password|pass|token|salt)'
 
@@ -19,7 +20,7 @@ lint_file() {
       return 1
     }
     function flush(  i) {
-      if (!managed) for (i = 1; i <= n; i++) print file ":" ln[i] ": " nm[i] " has a literal value"
+      if (!managed) for (i = 1; i <= n; i++) { print file ":" ln[i] ": " nm[i] " has a literal value"; violations++ }
       n = 0; managed = 0
     }
     function record(lineno, name, value) {
@@ -40,15 +41,15 @@ lint_file() {
     env && indent($0) <= env_indent { env = 0 }
     env { handle_env($0, NR); next }
     /^ *environment:[ \t]*$/ { env = 1; env_indent = indent($0) }
-    END { flush(); exit bad }
+    END { flush(); exit (violations > 0) ? 1 : 0 }
   ' "$1"
 }
 
 main() {
   local rc=0 out f
   for f in "$@"; do
-    out=$(lint_file "$f")
-    if [ -n "$out" ]; then printf '%s\n' "$out"; rc=1; fi
+    out=$(lint_file "$f") || rc=1
+    [ -z "$out" ] || printf '%s\n' "$out"
   done
   return "$rc"
 }

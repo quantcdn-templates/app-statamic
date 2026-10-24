@@ -19,6 +19,7 @@ grep -q APP_KEY "$ERR" && echo "PASS: message names APP_KEY" || { echo "FAIL: me
 
 # Old default goes from git straight into the environment of a subprocess; never printed.
 OLD=$(git show "$BASE":docker-compose.yml | grep -E '^\s*- APP_KEY' | sed -E 's/.*:-(.*)\}$/\1/')
+[ -n "$OLD" ]; check "old default was extracted" 0 $?
 env APP_KEY="$OLD" bash -c ". $GUARD" >/dev/null 2>"$ERR"; check "known default is refused" 1 $?
 unset OLD
 
