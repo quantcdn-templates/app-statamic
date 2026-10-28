@@ -4,6 +4,7 @@ x-quant-labels:
 
 services:
   statamic:
+    image: ghcr.io/quantcdn-templates/app-statamic:latest
     build: .
     restart: unless-stopped
     ports:
