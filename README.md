@@ -246,3 +246,9 @@ docker-compose exec statamic php please stache:refresh
 This Statamic application template is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
 
 Statamic itself requires a license for commercial use. Visit [statamic.com](https://statamic.com) for licensing information.
+
+## Managed database TLS
+
+Managed database connections verify the server certificate using the shared
+`/opt/rds-ca-certs/rds-ca-cert-bundle.pem` trust bundle, matching Drupal.
+Set `DISABLE_DB_TLS=true` only for a local development database.
