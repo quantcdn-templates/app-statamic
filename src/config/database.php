@@ -58,9 +58,11 @@ return [
             'prefix_indexes' => true,
             'strict' => true,
             'engine' => null,
-            'options' => extension_loaded('pdo_mysql') ? array_filter([
-                (PHP_VERSION_ID >= 80500 ? \Pdo\Mysql::ATTR_SSL_CA : \PDO::MYSQL_ATTR_SSL_CA) => env('MYSQL_ATTR_SSL_CA'),
-            ]) : [],
+            // Match Drupal: use the shared managed database CA and verify identity.
+            'options' => extension_loaded('pdo_mysql') && !env('DISABLE_DB_TLS', false) ? [
+                (PHP_VERSION_ID >= 80500 ? \Pdo\Mysql::ATTR_SSL_CA : \PDO::MYSQL_ATTR_SSL_CA) => env('MYSQL_ATTR_SSL_CA', '/opt/rds-ca-certs/rds-ca-cert-bundle.pem'),
+                (PHP_VERSION_ID >= 80500 ? \Pdo\Mysql::ATTR_SSL_VERIFY_SERVER_CERT : \PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT) => true,
+            ] : [],
         ],
 
         'mariadb' => [
@@ -78,9 +80,11 @@ return [
             'prefix_indexes' => true,
             'strict' => true,
             'engine' => null,
-            'options' => extension_loaded('pdo_mysql') ? array_filter([
-                (PHP_VERSION_ID >= 80500 ? \Pdo\Mysql::ATTR_SSL_CA : \PDO::MYSQL_ATTR_SSL_CA) => env('MYSQL_ATTR_SSL_CA'),
-            ]) : [],
+            // Match Drupal: use the shared managed database CA and verify identity.
+            'options' => extension_loaded('pdo_mysql') && !env('DISABLE_DB_TLS', false) ? [
+                (PHP_VERSION_ID >= 80500 ? \Pdo\Mysql::ATTR_SSL_CA : \PDO::MYSQL_ATTR_SSL_CA) => env('MYSQL_ATTR_SSL_CA', '/opt/rds-ca-certs/rds-ca-cert-bundle.pem'),
+                (PHP_VERSION_ID >= 80500 ? \Pdo\Mysql::ATTR_SSL_VERIFY_SERVER_CERT : \PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT) => true,
+            ] : [],
         ],
 
         'pgsql' => [
@@ -95,7 +99,8 @@ return [
             'prefix' => '',
             'prefix_indexes' => true,
             'search_path' => 'public',
-            'sslmode' => env('DB_SSLMODE', 'prefer'),
+            'sslmode' => env('DISABLE_DB_TLS', false) ? 'disable' : env('DB_SSLMODE', 'verify-full'),
+            'sslrootcert' => env('DB_SSLROOTCERT', '/opt/rds-ca-certs/rds-ca-cert-bundle.pem'),
         ],
 
         'sqlsrv' => [

@@ -4,6 +4,8 @@
 services:
   statamic:
     environment:
+      - DISABLE_DB_TLS=true
+
       # Laravel/Statamic Configuration
       - APP_ENV=local
       - APP_DEBUG=true
