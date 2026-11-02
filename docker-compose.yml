@@ -18,7 +18,10 @@ services:
       # Laravel/Statamic Configuration
       - APP_ENV=${APP_ENV:-production}
       - APP_DEBUG=${APP_DEBUG:-false}
-      - APP_KEY=${APP_KEY:-base64:UNfV7P+GtL4rzkK8sLGEMo43QRE+u/NyUaIoEULz6BY=}
+      # NOTE: APP_KEY must NOT be set here. Quant Cloud generates it as a secret
+      # (see quant/meta.json) and injects it. A value here would override it, and a
+      # fixed value would be shared by every site made from this template.
+      # For local development, set APP_KEY in docker-compose.override.yml.
       - APP_URL=${APP_URL:-http://localhost}
       - LOG_CHANNEL=${LOG_CHANNEL:-stderr}
       - LOG_LEVEL=${LOG_LEVEL:-error}

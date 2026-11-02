@@ -61,6 +61,16 @@ A production-ready Statamic CMS template for Quant Cloud, featuring PHP 8.4, Apa
 6. Access your application at `http://localhost`
 7. Access the control panel at `http://localhost/cp`
 
+## Secrets on Quant Cloud
+
+When you deploy this template from the Quant dashboard, Quant Cloud generates `APP_KEY` as a secret for the production environment (see `quant/meta.json`). Each site gets its own key.
+
+Do not set `APP_KEY` in `docker-compose.yml`. A value there overrides the generated secret, and every site from this template would share it.
+
+If you deploy without the dashboard (for example, from your own GitHub workflow), set `APP_KEY` as a secret on each environment before the first deployment (`php artisan key:generate --show`). A new environment does not copy secrets from production: set its key before you deploy it.
+
+To make a new key, set a new `APP_KEY` secret and redeploy. This ends all sessions, and data that Laravel encrypted with the old key cannot be read.
+
 ## Configuration
 
 ### Environment Variables
@@ -68,7 +78,7 @@ A production-ready Statamic CMS template for Quant Cloud, featuring PHP 8.4, Apa
 Key environment variables you should configure:
 
 #### Statamic/Laravel Configuration
-- `APP_KEY` - Application encryption key (required)
+- `APP_KEY` - Application encryption key (required, generated on Quant Cloud)
 - `APP_ENV` - Application environment (default: production)
 - `APP_DEBUG` - Enable debug mode (default: false)
 - `APP_URL` - Application URL
