@@ -2,8 +2,8 @@
 # only exists after `vite build`; the PHP image has no Node, so build here.
 FROM node:22-alpine AS assets
 WORKDIR /app
-COPY src/package.json ./
-RUN npm install --no-audit --no-fund
+COPY src/package.json src/package-lock.json ./
+RUN npm ci --no-audit --no-fund
 COPY src/vite.config.js ./
 COPY src/resources ./resources
 # Tailwind scans content/ for class names (see resources/css/site.css).
@@ -63,9 +63,9 @@ COPY --from=composer:2 /usr/bin/composer /usr/local/bin/
 WORKDIR /var/www/html
 
 # Copy dependency files first (changes occasionally)
-COPY src/composer.json src/composer.lock* ./
+COPY src/composer.json src/composer.lock ./
 
-# Install PHP dependencies (cached until composer files change)
+# Install PHP dependencies from src/composer.lock (updated by Dependabot PRs; see .github/dependabot.yml)
 RUN set -eux; \
     export COMPOSER_HOME="$(mktemp -d)"; \
     composer config apcu-autoloader true; \
